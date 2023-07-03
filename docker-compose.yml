@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  mj-api:
+    image: kunyu/midjourney-api:1.0
+    env_file: .env
+
+  mj-bot:
+    image: kunyu/midjourney-api:1.0
+    env_file: .env
+    command: bot
