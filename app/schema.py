@@ -35,6 +35,7 @@ class QueueReleaseIn(BaseModel):
 class TriggerResponse(BaseModel):
     message: str = "success"
     trigger_id: str
+    task_id: str
     trigger_type: str = ""
 
 
@@ -43,6 +44,7 @@ class UploadResponse(BaseModel):
     upload_filename: str = ""
     upload_url: str = ""
     trigger_id: str
+    task_id: str
 
 
 class SendMessageIn(BaseModel):
