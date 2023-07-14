@@ -8,7 +8,7 @@ from app.handler import PROMPT_PREFIX, PROMPT_SUFFIX
 from lib.api.callback import queue_release, callback
 from task.bot._typing import CallbackData, Attachment, Embed
 
-TRIGGER_ID_PATTERN = f"{PROMPT_PREFIX}(\w+?){PROMPT_SUFFIX}"  # 消息 ID 正则
+TRIGGER_ID_PATTERN = f"{PROMPT_PREFIX}(\w+?)-(\w+?){PROMPT_SUFFIX}"  # 消息 ID 正则
 
 TEMP_MAP: Dict[str, bool] = {}  # 临时存储消息流转信息
 
@@ -29,12 +29,14 @@ def pop_temp(trigger_id: str):
         pass
 
 
-def match_trigger_id(content: str) -> Union[str, None]:
+def match_trigger_task_id(content: str) -> tuple[Union[str, None], Union[str, None]]:
     match = re.findall(TRIGGER_ID_PATTERN, content)
-    return match[0] if match else None
+    trigger_id = match[0] if match else None
+    task_id = match[1] if match and len(match) > 1 else None
+    return (trigger_id, task_id)
 
 
-async def callback_trigger(trigger_id: str, trigger_status: str, message: Message):
+async def callback_trigger(trigger_id: str, task_id:str, trigger_status: str, message: Message):
     await callback(CallbackData(
         type=trigger_status,
         id=message.id,
@@ -45,12 +47,14 @@ async def callback_trigger(trigger_id: str, trigger_status: str, message: Messag
         ],
         embeds=[],
         trigger_id=trigger_id,
+        task_id=task_id,
     ))
 
 
 async def callback_describe(trigger_status: str, message: Message, embed: Dict[str, Any]):
     url = embed.get("image", {}).get("url")
-    trigger_id = url.split("/")[-1].split(".")[0]
+    trigger_id = url.split("/")[-1].split(".")[0].split("-")[0]
+    task_id = url.split("/")[-1].split(".")[0].split("-")[1]
 
     await callback(CallbackData(
         type=trigger_status,
@@ -61,5 +65,6 @@ async def callback_describe(trigger_status: str, message: Message, embed: Dict[s
             Embed(**embed)
         ],
         trigger_id=trigger_id,
+        task_id=task_id,
     ))
     return trigger_id

@@ -75,7 +75,7 @@ async def upload_attachment(file: UploadFile):
 
     trigger_id = str(unique_id())
     task_id = str(unique_id())
-    filename = f"{trigger_id}.jpg"
+    filename = f"{trigger_id}-{task_id}.jpg"
     file_size = file.size
     attachment = await discord.upload_attachment(filename, file_size, await file.read())
     if not (attachment and attachment.get("upload_url")):

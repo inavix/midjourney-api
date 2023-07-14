@@ -32,3 +32,4 @@ class CallbackData(TypedDict):
     embeds: List[Embed]
 
     trigger_id: str
+    task_id: str

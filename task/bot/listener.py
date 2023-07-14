@@ -4,7 +4,7 @@ from loguru import logger
 
 from task.bot import TriggerStatus
 from task.bot.handler import (
-    match_trigger_id,
+    match_trigger_task_id,
     set_temp,
     pop_temp,
     get_temp,
@@ -30,7 +30,8 @@ async def on_message(message: Message):
     logger.debug(f"on_message: {message.content}")
     logger.debug(f"on_message embeds: {message.embeds[0].to_dict() if message.embeds else message.embeds}")
     content = message.content
-    trigger_id = match_trigger_id(content)
+    trigger_id, task_id = match_trigger_task_id(content)
+    logger.debug(f"on_message trigger_id: {trigger_id}, task_id: {task_id}")
     if not trigger_id:
         return
 
@@ -65,7 +66,8 @@ async def on_message_edit(_: Message, after: Message):
         pop_temp(trigger_id)
         return
 
-    trigger_id = match_trigger_id(after.content)
+    trigger_id, task_id = match_trigger_task_id(after.content)
+    logger.debug(f"on_message trigger_id: {trigger_id}, task_id: {task_id}")
     if not trigger_id:
         return
 
@@ -78,7 +80,8 @@ async def on_message_delete(message: Message):
     if message.author.id != 936929561302675456:
         return
 
-    trigger_id = match_trigger_id(message.content)
+    trigger_id, task_id = match_trigger_task_id(message.content)
+    logger.debug(f"on_message trigger_id: {trigger_id}, task_id: {task_id}")
     if not trigger_id:
         return
 
