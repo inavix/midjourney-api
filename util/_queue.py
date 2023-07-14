@@ -1,14 +1,14 @@
 import asyncio
 from collections import deque
 from os import getenv
-from typing import ParamSpec, Callable, Any, Dict, List, Deque
+from typing import ParamSpec, Callable, Any, Dict, List, Deque, Tuple
 
 from loguru import logger
 
 from exceptions import QueueFullError
 
 P = ParamSpec("P")
-
+TaskKey = Tuple[str, str] # tuple(task_id, trigger_id)
 
 class Task:
     def __init__(
@@ -29,12 +29,13 @@ class TaskQueue:
     def __init__(self, concur_size: int, wait_size: int) -> None:
         self._concur_size = concur_size
         self._wait_size = wait_size
-        self._wait_queue: Deque[Dict[str, Task]] = deque()
-        self._concur_queue: List[str] = []
+        self._wait_queue: Deque[Dict[TaskKey, Task]] = deque()
+        self._concur_queue: List[TaskKey] = []
 
     def put(
             self,
             _trigger_id: str,
+            _task_id: str,
             func: Callable[P, Any],
             *args: P.args,
             **kwargs: P.kwargs
@@ -42,14 +43,16 @@ class TaskQueue:
         if len(self._wait_queue) >= self._wait_size:
             raise QueueFullError(f"Task queue is full: {self._wait_size}")
 
+        _key: TaskKey = tuple(_task_id, _trigger_id)
         self._wait_queue.append({
-            _trigger_id: Task(func, *args, **kwargs)
+            _key: Task(func, *args, **kwargs)
         })
         while self._wait_queue and len(self._concur_queue) < self._concur_size:
             self._exec()
 
-    def pop(self, _trigger_id: str) -> None:
-        self._concur_queue.remove(_trigger_id)
+    def pop(self, _trigger_id: str, _task_id) -> None:
+        _key: TaskKey = tuple(_task_id, _trigger_id)
+        self._concur_queue.remove(_key)
         if self._wait_queue:
             self._exec()
 
