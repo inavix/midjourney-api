@@ -34,6 +34,8 @@ async def on_message(message: Message):
     logger.debug(f"on_message trigger_id: {trigger_id}, task_id: {task_id}")
     if not trigger_id:
         return
+    if not task_id:
+        return
 
     if content.find("Waiting to start") != -1:
         trigger_status = TriggerStatus.start.value
@@ -45,7 +47,7 @@ async def on_message(message: Message):
         trigger_status = TriggerStatus.end.value
         pop_temp(trigger_id)
 
-    await callback_trigger(trigger_id, trigger_status, message)
+    await callback_trigger(trigger_id, task_id, trigger_status, message)
 
 
 @bot.event
@@ -71,8 +73,11 @@ async def on_message_edit(_: Message, after: Message):
     if not trigger_id:
         return
 
+    if not task_id:
+        return
+
     if after.webhook_id != "":
-        await callback_trigger(trigger_id, TriggerStatus.generating.value, after)
+        await callback_trigger(trigger_id, task_id, TriggerStatus.generating.value, after)
 
 
 @bot.event
@@ -84,6 +89,8 @@ async def on_message_delete(message: Message):
     logger.debug(f"on_message trigger_id: {trigger_id}, task_id: {task_id}")
     if not trigger_id:
         return
+    if not task_id:
+        return
 
     if get_temp(trigger_id) is None:
         return
@@ -92,4 +99,4 @@ async def on_message_delete(message: Message):
     logger.warning(f"sensitive content: {message.content}")
     trigger_status = TriggerStatus.banned.value
     pop_temp(trigger_id)
-    await callback_trigger(trigger_id, trigger_status, message)
+    await callback_trigger(trigger_id, task_id, trigger_status, message)

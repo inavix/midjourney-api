@@ -31,8 +31,7 @@ def pop_temp(trigger_id: str):
 
 def match_trigger_task_id(content: str) -> tuple[Union[str, None], Union[str, None]]:
     match = re.findall(TRIGGER_ID_PATTERN, content)
-    trigger_id = match[0] if match else None
-    task_id = match[1] if match and len(match) > 1 else None
+    trigger_id, task_id = match[0] if match else (None, None)
     return (trigger_id, task_id)
 
 
